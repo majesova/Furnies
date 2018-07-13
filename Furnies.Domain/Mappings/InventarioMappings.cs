@@ -82,6 +82,9 @@ namespace Furnies.Domain.Mappings
             HasMany(x => x.Precios).WithRequired(x => x.Producto).HasForeignKey(x => x.ProductoId);
             HasMany(x => x.Presentaciones).WithRequired(x => x.Producto).HasForeignKey(x => x.ProductoId);
             HasMany(x => x.Medidas).WithRequired(x => x.Producto).HasForeignKey(x => x.ProductoId);
+
+            Property(x => x.CreatedAt).IsRequired();
+            Property(x => x.CreatedById).IsRequired();
         }
     }
 

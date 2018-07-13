@@ -9,30 +9,36 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Furnies.WebUI.Models;
+using BitEng.Security.Managers;
+using BitEng.Security.Model;
+using BitEng.Security;
+using Furnies.Domain;
+using Furnies.Domain.Entities.Accounts;
+using System.Transactions;
 
 namespace Furnies.WebUI.Controllers
 {
     [Authorize]
     public class AccountController : Controller
     {
-        private ApplicationSignInManager _signInManager;
-        private ApplicationUserManager _userManager;
+        private BitSignInManager _signInManager;
+        private BitUserManager _userManager;
 
         public AccountController()
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
+        public AccountController(BitUserManager userManager, BitSignInManager signInManager )
         {
             UserManager = userManager;
             SignInManager = signInManager;
         }
 
-        public ApplicationSignInManager SignInManager
+        public BitSignInManager SignInManager
         {
             get
             {
-                return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
+                return _signInManager ?? HttpContext.GetOwinContext().Get<BitSignInManager>();
             }
             private set 
             { 
@@ -40,11 +46,11 @@ namespace Furnies.WebUI.Controllers
             }
         }
 
-        public ApplicationUserManager UserManager
+        public BitUserManager UserManager
         {
             get
             {
-                return _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+                return _userManager ?? HttpContext.GetOwinContext().GetUserManager<BitUserManager>();
             }
             private set
             {
@@ -149,23 +155,49 @@ namespace Furnies.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
+            IdentityResult result=null;
+            var defaultRoleKey = "USER";
             if (ModelState.IsValid)
-            {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-                var result = await UserManager.CreateAsync(user, model.Password);
-                if (result.Succeeded)
-                {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
-                    // Para obtener más información sobre cómo habilitar la confirmación de cuenta y el restablecimiento de contraseña, visite http://go.microsoft.com/fwlink/?LinkID=320771
-                    // Enviar correo electrónico con este vínculo
-                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    // await UserManager.SendEmailAsync(user.Id, "Confirmar cuenta", "Para confirmar la cuenta, haga clic <a href=\"" + callbackUrl + "\">aquí</a>");
+            {   
+                var user = new BitUser { UserName = model.Email, Email = model.Email, EmailConfirmed=true };//Se crea usuario de seguridad
+                var owinContext = HttpContext.GetOwinContext().Get<BitSecurityContext>();
 
+                using (var scope = new TransactionScope(TransactionScopeOption.Required))
+                {
+                    try
+                    {
+                        var roleId = owinContext.Roles.Where(x => x.Name == defaultRoleKey).Single().Id;
+                        user.Roles.Add(new BitUserRole { RoleId=roleId, UserId = user.Id});
+                        result =  UserManager.Create(user, model.Password);
+                        
+                        if (result.Succeeded)
+                        {
+                            using (var appContext = new FurniesContext())
+                            {
+                                appContext.Usuarios.Add(new Usuario { Id = user.Id, Email = user.Email });
+                                appContext.SaveChanges();
+                            }
+                            scope.Complete();
+                        }
+                        else
+                        {
+                            return RedirectToAction("Index", "Home");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ModelState.AddModelError("", ex.Message);
+                    }
+                }
+
+                if (result != null && !result.Succeeded)
+                    AddErrors(result);
+                else
+                {
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+                    owinContext.Dispose();
                     return RedirectToAction("Index", "Home");
                 }
-                AddErrors(result);
             }
 
             // Si llegamos a este punto, es que se ha producido un error y volvemos a mostrar el formulario
@@ -181,7 +213,7 @@ namespace Furnies.WebUI.Controllers
             {
                 return View("Error");
             }
-            var result = await UserManager.ConfirmEmailAsync(userId, code);
+            var result = await UserManager.ConfirmEmailAsync(Guid.Parse(userId), code);
             return View(result.Succeeded ? "ConfirmEmail" : "Error");
         }
 
@@ -367,7 +399,7 @@ namespace Furnies.WebUI.Controllers
                 {
                     return View("ExternalLoginFailure");
                 }
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new BitUser { UserName = model.Email, Email = model.Email };
                 var result = await UserManager.CreateAsync(user);
                 if (result.Succeeded)
                 {

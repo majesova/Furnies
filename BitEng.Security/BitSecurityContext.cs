@@ -25,6 +25,7 @@ namespace BitEng.Security
         public virtual DbSet<BitPermission> Permissions { get; set; }
         public virtual DbSet<BitRolePermission> RolePermissions { get; set; }
         public virtual DbSet<BitUserRole> UserRoles { get; set; }
+        public virtual DbSet<BitMenuItem> MenuItems { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -58,6 +59,12 @@ namespace BitEng.Security
 
             var userRoles = modelBuilder.Entity<BitUserRole>().ToTable("BitUserRole");
             userRoles.HasKey(x => new { x.RoleId, x.UserId });
+
+            var menuItem = modelBuilder.Entity<BitMenuItem>();
+            menuItem.ToTable("BitMenuItems").HasKey(x => x.Id);
+            menuItem.Property(x => x.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            menuItem.HasMany(x => x.Children).WithOptional(x => x.Parent).HasForeignKey(x => x.ParentId);
+            menuItem.HasOptional(x => x.Permission).WithMany().HasForeignKey(x => x.PermissionKey);
 
         }
     }

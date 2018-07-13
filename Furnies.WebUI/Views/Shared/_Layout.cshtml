@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿
+@using BitEng.Security.Extensions
+@using BitEng.Security.Helpers
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -22,9 +25,10 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Inicio", "Index", "Home")</li>
-                    <li>@Html.ActionLink("Acerca de", "About", "Home")</li>
-                    <li>@Html.ActionLink("Contacto", "Contact", "Home")</li>
+                    @{
+                        var menuOptions = Request.GetOwinContext().GetUserMenu();
+                        @Html.BoostrapMenu(menuOptions);
+                    }
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>

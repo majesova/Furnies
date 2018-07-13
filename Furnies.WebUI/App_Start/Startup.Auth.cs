@@ -7,6 +7,8 @@ using Microsoft.Owin.Security.Google;
 using Owin;
 using Furnies.WebUI.Models;
 using BitEng.Security;
+using BitEng.Security.Managers;
+using BitEng.Security.Model;
 
 namespace Furnies.WebUI
 {
@@ -17,8 +19,8 @@ namespace Furnies.WebUI
         {
             // Configure el contexto de base de datos, el administrador de usuarios y el administrador de inicios de sesión para usar una única instancia por solicitud
             app.CreatePerOwinContext(()=>BitSecurityContext.Create("SecurityConnection"));
-            app.CreatePerOwinContext<ApplicationUserManager>(ApplicationUserManager.Create);
-            app.CreatePerOwinContext<ApplicationSignInManager>(ApplicationSignInManager.Create);
+            app.CreatePerOwinContext<BitUserManager>(BitUserManager.Create);
+            app.CreatePerOwinContext<BitSignInManager>(BitSignInManager.Create);
 
             // Permitir que la aplicación use una cookie para almacenar información para el usuario que inicia sesión
             // y una cookie para almacenar temporalmente información sobre un usuario que inicia sesión con un proveedor de inicio de sesión de terceros
@@ -27,13 +29,15 @@ namespace Furnies.WebUI
             {
                 AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
                 LoginPath = new PathString("/Account/Login"),
+                CookieName="BitEngine-IdentityService",
                 Provider = new CookieAuthenticationProvider
                 {
                     // Permite a la aplicación validar la marca de seguridad cuando el usuario inicia sesión.
                     // Es una característica de seguridad que se usa cuando se cambia una contraseña o se agrega un inicio de sesión externo a la cuenta.  
-                    OnValidateIdentity = SecurityStampValidator.OnValidateIdentity<ApplicationUserManager, ApplicationUser>(
+                    OnValidateIdentity = SecurityStampValidator.OnValidateIdentity<BitUserManager, BitUser, Guid>(
                         validateInterval: TimeSpan.FromMinutes(30),
-                        regenerateIdentity: (manager, user) => user.GenerateUserIdentityAsync(manager))
+                        regenerateIdentityCallback: (manager, user) => user.GenerateUserIdentityAsync(manager),
+                        getUserIdCallback: (id) => (Guid.Parse(id.GetUserId())))
                 }
             });            
             app.UseExternalSignInCookie(DefaultAuthenticationTypes.ExternalCookie);

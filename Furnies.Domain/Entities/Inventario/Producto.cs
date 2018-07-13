@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Furnies.Domain.Entities.Accounts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,6 +23,11 @@ namespace Furnies.Domain.Inventario
         public List<PresentacionProducto> Presentaciones { get; set; }
         //Concurrencia optimista
         public byte[] Version { get; set; }
+
+        public Guid CreatedById { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public Guid? ModifiedById { get; set; }
+        public DateTime? ModifiedAt { get; set; }
 
     }
 }

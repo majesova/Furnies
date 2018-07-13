@@ -9,5 +9,6 @@ namespace BitEng.Security.Model
 {
     public class BitRole : IdentityRole<Guid, BitUserRole>
     {
+        public string DisplayName { get; set; }
     }
 }

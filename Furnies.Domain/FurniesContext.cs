@@ -1,4 +1,5 @@
 ﻿using Furnies.Domain.Configuracion;
+using Furnies.Domain.Entities.Accounts;
 using Furnies.Domain.Inventario;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,8 @@ namespace Furnies.Domain
         {
 
         }
+
+        public IDbSet<Usuario> Usuarios { get; set; }
         public IDbSet<Producto> Productos { get; set; }
         public IDbSet<ImagenProducto> ImagenesProducto { get; set; }
         public IDbSet<MedidaProducto> MedidasProducto { get; set; }

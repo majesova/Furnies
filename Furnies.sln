@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furnies.WebUI", "Furnies.We
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitEng.Security", "BitEng.Security\BitEng.Security.csproj", "{4829229F-78EE-492A-83BC-23BD1258CF05}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pruebas", "Pruebas\Pruebas.csproj", "{D13E8772-F13A-498B-BC42-28D8DCC1F75E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,10 +33,6 @@ Global
 		{4829229F-78EE-492A-83BC-23BD1258CF05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4829229F-78EE-492A-83BC-23BD1258CF05}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4829229F-78EE-492A-83BC-23BD1258CF05}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D13E8772-F13A-498B-BC42-28D8DCC1F75E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D13E8772-F13A-498B-BC42-28D8DCC1F75E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D13E8772-F13A-498B-BC42-28D8DCC1F75E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D13E8772-F13A-498B-BC42-28D8DCC1F75E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
