@@ -15,6 +15,8 @@ using BitEng.Security;
 using Furnies.Domain;
 using Furnies.Domain.Entities.Accounts;
 using System.Transactions;
+using Furnies.Application.Usuarios;
+using BitEng.Security.Repositories;
 
 namespace Furnies.WebUI.Controllers
 {
@@ -23,9 +25,13 @@ namespace Furnies.WebUI.Controllers
     {
         private BitSignInManager _signInManager;
         private BitUserManager _userManager;
+        private UsuarioAppService usuarioService ;
+        private FurniesContext _context;
 
         public AccountController()
         {
+            _context = new FurniesContext();
+            usuarioService = new UsuarioAppService(_context);
         }
 
         public AccountController(BitUserManager userManager, BitSignInManager signInManager )
@@ -155,49 +161,46 @@ namespace Furnies.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
-            IdentityResult result=null;
+            IdentityResult result = null;
             var defaultRoleKey = "USER";
             if (ModelState.IsValid)
-            {   
-                var user = new BitUser { UserName = model.Email, Email = model.Email, EmailConfirmed=true };//Se crea usuario de seguridad
+            {
+                #region obtener rol id
                 var owinContext = HttpContext.GetOwinContext().Get<BitSecurityContext>();
+                RoleRepository roleRepository = new RoleRepository(owinContext);
+                var roleId = roleRepository.GetRoleByName(defaultRoleKey).Id;
+                #endregion
 
-                using (var scope = new TransactionScope(TransactionScopeOption.Required))
+                CreateUsuario createUsuario = new CreateUsuario { Email = model.Email, Password = model.Password, EmailConfirmed = true };
+                createUsuario.RolesIds = new Guid[] { roleId };
+                try
                 {
-                    try
-                    {
-                        var roleId = owinContext.Roles.Where(x => x.Name == defaultRoleKey).Single().Id;
-                        user.Roles.Add(new BitUserRole { RoleId=roleId, UserId = user.Id});
-                        result =  UserManager.Create(user, model.Password);
-                        
-                        if (result.Succeeded)
-                        {
-                            using (var appContext = new FurniesContext())
-                            {
-                                appContext.Usuarios.Add(new Usuario { Id = user.Id, Email = user.Email });
-                                appContext.SaveChanges();
-                            }
-                            scope.Complete();
-                        }
-                        else
-                        {
-                            return RedirectToAction("Index", "Home");
-                        }
+
+                    var serviceResult = usuarioService.Create(createUsuario);
+                    if (serviceResult.Status == Application.OperationStatus.Succeed) {
+                        var bitUser = UserManager.FindByEmail(createUsuario.Email);
+                        SignInManager.SignIn(bitUser, isPersistent: false, rememberBrowser: false);
+                        owinContext.Dispose();
+                        return RedirectToAction("Index", "Home");
                     }
-                    catch (Exception ex)
+
+                    else
                     {
-                        ModelState.AddModelError("", ex.Message);
+                        if (serviceResult.OperationError.FriendlyDescription != null)
+                            ModelState.AddModelError("", serviceResult.OperationError.FriendlyDescription);
+                        if (serviceResult.OperationError.Exception!=null)
+                            ModelState.AddModelError("", serviceResult.OperationError.Exception.Message);
                     }
+
+                    
+
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", ex.Message);
                 }
 
-                if (result != null && !result.Succeeded)
-                    AddErrors(result);
-                else
-                {
-                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-                    owinContext.Dispose();
-                    return RedirectToAction("Index", "Home");
-                }
+               
             }
 
             // Si llegamos a este punto, es que se ha producido un error y volvemos a mostrar el formulario
@@ -449,6 +452,10 @@ namespace Furnies.WebUI.Controllers
                 {
                     _signInManager.Dispose();
                     _signInManager = null;
+                }
+
+                if (usuarioService != null) {
+                    usuarioService.Dispose();
                 }
             }
 

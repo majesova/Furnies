@@ -7,9 +7,6 @@ using System.Linq.Dynamic;
 using System.Linq.Expressions;
 namespace Furnies.Domain.Repositories
 {
-
-
-
     public class BaseRepository<TEntity> where TEntity : class
     {
         /// <summary>
@@ -163,7 +160,7 @@ namespace Furnies.Domain.Repositories
                 query = query.Where(where);
             var totalCount = query.Count();
             totalRows = totalCount;
-            query = query.OrderBy(order).Skip(pageSize * page).Take(pageSize); ;
+            query = query.OrderBy(order).Skip(pageSize * page).Take(pageSize);
             var results = query.AsNoTracking().ToList();
             totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
             return results;

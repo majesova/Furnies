@@ -86,6 +86,7 @@
     <Compile Include="Repositories\PrecioProductoRepository.cs" />
     <Compile Include="Repositories\PresentacionProductoRepository.cs" />
     <Compile Include="Repositories\ProductoRepository.cs" />
+    <Compile Include="Repositories\UsuarioRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

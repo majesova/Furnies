@@ -17,7 +17,7 @@ namespace Furnies.Domain
         {
 
         }
-
+        
         public IDbSet<Usuario> Usuarios { get; set; }
         public IDbSet<Producto> Productos { get; set; }
         public IDbSet<ImagenProducto> ImagenesProducto { get; set; }

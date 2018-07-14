@@ -204,12 +204,15 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Models\UsuarioCreateViewModel.cs" />
+    <Compile Include="Controllers\UsuariosController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\SystemSettings.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -275,6 +278,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Usuarios\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
@@ -292,6 +296,10 @@
     <ProjectReference Include="..\BitEng\BitEng.csproj">
       <Project>{c93d1085-96c8-4881-96b6-63c55dfed873}</Project>
       <Name>BitEng</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Furnies.Application\Furnies.Application.csproj">
+      <Project>{8943c698-c408-43c0-92cf-705e874e6d74}</Project>
+      <Name>Furnies.Application</Name>
     </ProjectReference>
     <ProjectReference Include="..\Furnies.Domain\Furnies.Domain.csproj">
       <Project>{e675db3d-5000-4048-b210-b5ad2fad4b6a}</Project>
