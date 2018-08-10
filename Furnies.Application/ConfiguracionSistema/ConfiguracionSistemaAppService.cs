@@ -1,4 +1,5 @@
 ﻿using Furnies.Domain;
+using Furnies.Domain.Configuracion;
 using Furnies.Domain.Repositories;
 using System;
 using System.Collections.Generic;
@@ -29,15 +30,41 @@ namespace Furnies.Application
             var value = GetValue("SystemName");
             return value;
         }
+        public string GetWelcomeMessage()
+        {
+            var value = GetValue("WelcomeMessage");
+            return value;
+        }
+
+        public List<ConfiguracionSistema> GetConfiguraciones() {
+            return _confRepository.GetAll().ToList();
+        }
+
+        public ConfiguracionSistema GetByKey(string key) {
+            var result = _confRepository.Find(key);
+            if (result == null)
+                throw new Exception($"No se encuentra la clave {key}");
+            return result;
+        }
+
+
+        public ConfiguracionSistema Update(string key, string value) {
+            var conf = _confRepository.Find(key);
+            conf.Valor = value;
+            _confRepository.Update(conf);
+            _context.SaveChanges();
+            return conf;
+        }
 
         private string GetValue(string key) {
-            //          Type type = Type.GetType(result.TipoDato);
-            //          var pageSize = Convert.ChangeType(result.Valor,type);
             var result = _confRepository.Find(key);
             if (result == null)
                 throw new Exception($"No se encuentra la clave {key}");
             return result.Valor;
         }
+
+
+        
 
         public void Dispose()
         {

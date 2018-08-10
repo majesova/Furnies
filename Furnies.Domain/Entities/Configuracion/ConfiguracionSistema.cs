@@ -11,5 +11,6 @@ namespace Furnies.Domain.Configuracion
         public string Clave { get; set; }
         public string Valor { get; set; }
         public string TipoDato { get; set; }
+        public string NombreMostrar { get; set; }
     }
 }

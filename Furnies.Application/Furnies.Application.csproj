@@ -91,12 +91,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfiguracionSistema\ConfiguracionSistemaAppService.cs" />
+    <Compile Include="ConfiguracionSistema\UpdateConfiguracionDto.cs" />
     <Compile Include="IQueryObject.cs" />
     <Compile Include="Productos\ProductoAppService.cs" />
+    <Compile Include="Productos\SearchProductosQuery.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryObject.cs" />
     <Compile Include="ServiceResult.cs" />
-    <Compile Include="Usuarios\CreateUsuario.cs" />
+    <Compile Include="Usuarios\CreateUsuarioDto.cs" />
     <Compile Include="Usuarios\UsuarioAppService.cs" />
     <Compile Include="Usuarios\UsuarioQuery.cs" />
   </ItemGroup>

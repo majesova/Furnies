@@ -12,12 +12,11 @@ namespace Furnies.WebUI.Controllers
     public class UsuariosController : Controller
     {
         private UsuarioAppService usuarioService;
-        private SystemSettings systemSettings;
         public FurniesContext context = new FurniesContext();
         public UsuariosController()
         {
             usuarioService = new UsuarioAppService(context);
-            systemSettings = new SystemSettings();
+            
         }
 
         protected override void Dispose(bool disposing)
@@ -29,14 +28,16 @@ namespace Furnies.WebUI.Controllers
         public ActionResult Index(int page=1, Guid? id = null, string email="")
         {
             UsuarioQuery query = new UsuarioQuery();
-            if (id != null) {
+
+            if (id != null)
                 query.IdIgual(id.Value); //Igual se puede poner directo el expression
-            }
-            if (string.IsNullOrEmpty(email)) {
+
+            if (string.IsNullOrEmpty(email))
                 query.EmailContiene(email); //Igual se puede poner directo el expression
-            }
-            var usuarios = usuarioService.GetPaged(query, "Email", page, systemSettings.PageSize);
-            return View(usuarios);
+
+            var pagedUsuarios = usuarioService.GetPaged(query, "Email", page, SystemSettingsService.PageSize);
+
+            return View(pagedUsuarios);
         }
 
         // GET: Usuarios/Details/5

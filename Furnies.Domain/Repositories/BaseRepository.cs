@@ -150,11 +150,12 @@ namespace Furnies.Domain.Repositories
             return query.ToList();
         }
        
-        public virtual ICollection<TEntity> QueryPage(Expression<Func<TEntity, bool>> where, out int totalPages, out int totalRows, string order, int page = 0, int pageSize = 10)
+        public virtual ICollection<TEntity> QueryPage(Expression<Func<TEntity, bool>> where, out int totalPages, out int totalRows, string order, int page = 1, int pageSize = 10)
         {
             if (pageSize <= 0) throw new Exception("El valor del parámetro 'pageSize' debe ser mayor que cero");
             if (string.IsNullOrEmpty(order)) throw new Exception("Es necesario indicar un orden para una consulta paginada");
-
+            if (page > 0) 
+                page--;//Index 0..N
             var query = _dbSet.AsQueryable();
             if (where != null)
                 query = query.Where(where);
@@ -176,11 +177,12 @@ namespace Furnies.Domain.Repositories
         /// <param name="page">Página que se quiere consultar, inicia en </param>
         /// <param name="pageSize">Tamaño de página que se requier</param>
         /// <returns>Colección de objetos</returns>
-        public virtual ICollection<TEntity> QueryPageIncluding(Expression<Func<TEntity, bool>> where, Expression<Func<TEntity, object>>[] includes, out int totalPages, out int totalRows, string order, int page = 0, int pageSize = 10)
+        public virtual ICollection<TEntity> QueryPageIncluding(Expression<Func<TEntity, bool>> where, Expression<Func<TEntity, object>>[] includes, out int totalPages, out int totalRows, string order, int page = 1, int pageSize = 10)
         {
             if (pageSize <= 0) throw new Exception("El valor del parámetro 'pageSize' debe ser mayor que cero");
             if (string.IsNullOrEmpty(order)) throw new Exception("Es necesario indicar un orden para una consulta paginada");
-
+            if (page > 0)
+                page--;//Index 0..N
             var query = _dbSet.AsQueryable();
             if (includes.Length > 0)
             {

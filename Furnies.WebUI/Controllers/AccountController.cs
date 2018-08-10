@@ -161,7 +161,6 @@ namespace Furnies.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
-            IdentityResult result = null;
             var defaultRoleKey = "USER";
             if (ModelState.IsValid)
             {
@@ -171,13 +170,13 @@ namespace Furnies.WebUI.Controllers
                 var roleId = roleRepository.GetRoleByName(defaultRoleKey).Id;
                 #endregion
 
-                CreateUsuario createUsuario = new CreateUsuario { Email = model.Email, Password = model.Password, EmailConfirmed = true };
+                CreateUsuarioDto createUsuario = new CreateUsuarioDto { Email = model.Email, Password = model.Password, EmailConfirmed = true };
                 createUsuario.RolesIds = new Guid[] { roleId };
                 try
                 {
 
                     var serviceResult = usuarioService.Create(createUsuario);
-                    if (serviceResult.Status == Application.OperationStatus.Succeed) {
+                    if (serviceResult.IsSucceed) {
                         var bitUser = UserManager.FindByEmail(createUsuario.Email);
                         SignInManager.SignIn(bitUser, isPersistent: false, rememberBrowser: false);
                         owinContext.Dispose();
@@ -186,13 +185,11 @@ namespace Furnies.WebUI.Controllers
 
                     else
                     {
-                        if (serviceResult.OperationError.FriendlyDescription != null)
-                            ModelState.AddModelError("", serviceResult.OperationError.FriendlyDescription);
+                        if (serviceResult.OperationError.errorMessage != null)
+                            ModelState.AddModelError("errorMessage", serviceResult.OperationError.errorMessage);
                         if (serviceResult.OperationError.Exception!=null)
-                            ModelState.AddModelError("", serviceResult.OperationError.Exception.Message);
+                            ModelState.AddModelError("exceptionMessage", serviceResult.OperationError.Exception.Message);
                     }
-
-                    
 
                 }
                 catch (Exception ex)

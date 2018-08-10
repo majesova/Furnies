@@ -5,7 +5,6 @@ using Furnies.Domain.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using Microsoft.AspNet.Identity;
 using BitEng.Security;
 using System.Transactions;
@@ -26,10 +25,11 @@ namespace Furnies.Application.Usuarios
             _usuarioRepository = new UsuarioRepository(_context);
         }
 
-        public ServiceResult<Usuario> Create(CreateUsuario createUsuario) {
+        public ServiceResult<Usuario> Create(CreateUsuarioDto createUsuario) {
+            ServiceResult<Usuario> result;
             try
             {
-                IdentityResult result = null;
+                IdentityResult idenityResult = null;
                 Usuario usuario = null;
                 var user = new BitUser { UserName = createUsuario.Email, Email = createUsuario.Email, EmailConfirmed = createUsuario.EmailConfirmed };
                 //adding roles
@@ -41,27 +41,27 @@ namespace Furnies.Application.Usuarios
                 BitUserManager userManager = new BitUserManager(new BitUserStore(securityContext));
                 using (var scope = new TransactionScope(TransactionScopeOption.Required))
                 {
-                    result = userManager.Create(user, createUsuario.Password);
-                    if (result.Succeeded)
+                    idenityResult = userManager.Create(user, createUsuario.Password);
+                    if (idenityResult.Succeeded)
                     {
                         usuario = new Usuario { Id = user.Id, Email = user.Email };
                         _usuarioRepository.Insert(usuario);
                         _context.SaveChanges();
                     }
                     else {
-                        OperationError error = new OperationError(ErrorType.Validation, string.Join(",",result.Errors));
-                        return new ServiceResult<Usuario>(OperationStatus.Error, error);
+                        result = new ServiceErrorResult<Usuario>(new OperationError(ErrorType.Validation, string.Join(",", idenityResult.Errors)));
                     }
                     scope.Complete();
                 }
                 
-                return new ServiceResult<Usuario>(OperationStatus.Succeed, usuario);
+                result = new ServiceSucceedResult<Usuario>(usuario);
             }
             catch (Exception ex)
             {
                 OperationError error = new OperationError(ErrorType.Exception,"No se realizó la inserción",ex);
-                return new ServiceResult<Usuario>(OperationStatus.Error, error);
+                result = new ServiceErrorResult<Usuario>(ErrorType.Exception,"No se insertó", ex);
             }
+            return result;
         }
 
         public ServiceResult<Usuario> Update(Usuario usuario)
@@ -70,21 +70,21 @@ namespace Furnies.Application.Usuarios
             {
                 _usuarioRepository.Update(usuario);
                 _context.SaveChanges();
-                return new ServiceResult<Usuario>(OperationStatus.Succeed, usuario);
+                return new ServiceSucceedResult<Usuario>(usuario);
             }
             catch (Exception ex)
             {
                 OperationError error = new OperationError(ErrorType.Exception, "No se realizó la actualización", ex);
-                return new ServiceResult<Usuario>(OperationStatus.Error, error);
+                return new ServiceSucceedResult<Usuario>(usuario);
             }
         }
 
-        public List<Usuario> Get(UsuarioQuery query, string order = "") {
+        public List<Usuario> Get(IQueryObject<Usuario> query, string order = "") {
             var result = _usuarioRepository.Query(query.Query(), order);
             return result.ToList();
         }
 
-        public PagedResult<Usuario> GetPaged(UsuarioQuery query, string order, int page = 0, int pageSize = 10)
+        public PagedResult<Usuario> GetPaged(IQueryObject<Usuario> query, string order, int page = 0, int pageSize = 10)
         {
             int totalPagesResult = 0;
             int totalRowsResult = 0;

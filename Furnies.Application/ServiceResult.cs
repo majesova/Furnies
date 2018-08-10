@@ -6,23 +6,36 @@ using System.Threading.Tasks;
 
 namespace Furnies.Application
 {
-    public class ServiceResult<T>
+    public abstract class ServiceResult<T>
     {
-        public ServiceResult(OperationStatus status, OperationError error)
-        {
-            Status = status;
-            OperationError = error;
-        }
-        public ServiceResult(OperationStatus status, T result)
-        {
-            Status = status;
-            Result = result;
-        }
-        public T Result { get; private set; }
-        public OperationStatus Status { get; private set; }
-        public OperationError OperationError { get; private set; }
+        public T Result { get; protected set; }
+        public bool IsSucceed { get; protected set; }
+        public OperationError OperationError { get; protected set; }
     }
 
+
+    public class ServiceErrorResult<T> : ServiceResult<T>{
+
+        public ServiceErrorResult(OperationError error)
+        {
+            IsSucceed = false;
+            OperationError = error;
+        }
+        public ServiceErrorResult(ErrorType errorType, string errorMessage, Exception ex)
+        {
+            IsSucceed = false;
+            OperationError = new OperationError(errorType, errorMessage, ex);
+        }
+    }
+
+    public class ServiceSucceedResult<T> : ServiceResult<T>
+    {
+        public ServiceSucceedResult(T result)
+        {
+            IsSucceed = true;
+            Result = result;
+        }
+    }
     public enum OperationStatus {
         Succeed,
         Error
@@ -35,19 +48,19 @@ namespace Furnies.Application
     }
 
     public class OperationError {
-        public OperationError(ErrorType type, string friendlyDescription, Exception ex)
+        public OperationError(ErrorType type, string errorMessage, Exception ex)
         {
             ErrorType = type;
-            FriendlyDescription = friendlyDescription;
+            this.errorMessage = errorMessage;
             Exception = ex;
         }
-        public OperationError(ErrorType type, string friendlyDescription)
+        public OperationError(ErrorType type, string errorMessage)
         {
             ErrorType = type;
-            FriendlyDescription = friendlyDescription;
+            this.errorMessage = errorMessage;
         }
         public ErrorType ErrorType { get; private set; }
-        public string FriendlyDescription { get; private set; }
+        public string errorMessage { get; private set; }
         public Exception Exception { get; private set; }
     }
 

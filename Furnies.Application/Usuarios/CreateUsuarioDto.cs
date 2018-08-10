@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Furnies.Application.Usuarios
 {
-    public class CreateUsuario
+    public class CreateUsuarioDto
     {
         public string Email { get; set; }   
         public string Password { get; set; }

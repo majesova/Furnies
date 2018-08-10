@@ -1,0 +1,135 @@
+﻿@using Furnies.WebUI.Models
+
+@model List<ConfiguracionSistemaViewModel>
+
+@{
+    ViewBag.Title = "Configuraciones de Sistema";
+}
+
+<h5>Configuraciones Sistema</h5>
+
+<div id="app">
+    <div class="alert alert-warning fade in" v-if="error">
+        <a href="#" class="close" data-dismiss="alert">&times;</a>
+        <strong>Warning!</strong> {{message}}
+    </div>
+
+    <div class="alert alert-success fade in" v-if="success">
+        <a href="#" class="close" data-dismiss="alert">&times;</a>
+        <strong>Success!</strong> {{message}}
+    </div>
+
+    <table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Configuración</th>
+            <th>Valor</th>
+        </tr>
+    </thead>
+    <tbody>
+            <tr v-for="conf in configurations">
+                <td>{{conf.nombreMostrar}}</td>
+                <td>{{conf.valor}}</td>
+                <td>
+                    <button type="button" class="btn btn-warning btn-edit" v-on:click="prepareEdit(conf.clave)">Editar</button>
+                </td>
+            </tr>
+        
+    </tbody>
+    </table>
+    
+
+    <div id="formModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <p class="modal-title">
+                        Proporcione el valor para
+                    </p>
+                </div>
+                <div class="modal-body">
+                    <h5 id="txtKey">{{editingElement.nombreMostrar}}</h5>
+                    <input id="txtValor" class="form-control" v-model.trim="editingElement.Valor" :type="editingElement.type" />{{editingElement.type}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" v-on:click="save">Guardar Cambios</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+</div>
+
+    @section scripts{
+        <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+        <script type="text/javascript">
+            var app = new Vue({
+                el: '#app',
+                data: {
+                    configurations:[],
+                    editingElement: {},
+                    error: false,
+                    success: false,
+                    message:""
+                },
+                created: function () {
+                    this.fetch();
+                },
+                methods: {
+                    fetch: function () {
+                        var self = this;
+                        var options = { url: "@Url.Content("~/ConfiguracionesSistema/")", type: "GET" };
+                        $.ajax(options).done(function (data) {
+                            self.configurations = data;
+                        });
+                    },
+                    prepareEdit: function (key) {
+                        var self = this;
+                        var options = {url: "@Url.Content("~/ConfiguracionesSistema/GetByKey")?key=" + key, type: "GET"};
+                        $.ajax(options).done(function (data) {
+                            self.editingElement = data;
+                            self.editingElement.Type = self.typeFactory(data.tipoDato);
+                            $("#formModal").modal('show');
+                        });
+                    },
+                    typeFactory: function (type) {
+                        if (type == "System.Int32")
+                            return "number";
+                        return "text";
+                    },
+                    save: function () {
+                        var self = this;
+                        var model = { clave: this.editingElement.clave, valor: this.editingElement.valor };
+                        var options = {
+                            url: "@Url.Content("~/ConfiguracionesSistema/SaveConfiguration")", type: "POST",
+                            data: model};
+
+                        $.ajax(options).done(function (data) {
+                                self.syncData(data, self.configurations);
+                                self.editingElement = {};
+                                self.success = true;
+                                self.message = "Edición exitosa de " + data.nombreMostrar;
+                                window.setTimeout(function () {
+                                    $(".alert").fadeTo(1000, 0).slideUp(1000, function () {
+                                        self.success = false;
+                                        self.message = "";
+                                    });
+                                }, 2000);
+                                $("#formModal").modal('hide');
+                            })
+                    },
+                    syncData: function(item, data){
+                        for (var i = 0; i < data.length; i++) {
+                            var element = data[i];
+                            if (element.Clave == item.clave) {
+                                element.Valor = item.valor;
+                                return;
+                            }
+                        }
+                    }
+                }
+            })
+        </script>
+    }
